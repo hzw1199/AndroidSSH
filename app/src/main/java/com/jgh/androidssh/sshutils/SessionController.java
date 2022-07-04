@@ -269,7 +269,7 @@ public class SessionController {
                     mShellController.openShell(getSession(), handler, editText);
 
                 } catch (Exception e) {
-                    Log.e(TAG, "Shell open exception " + e.getMessage());
+                    e.printStackTrace();
                     //TODO fix general exception catching
                 }
             }

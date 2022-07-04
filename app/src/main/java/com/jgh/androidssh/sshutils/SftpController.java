@@ -274,7 +274,7 @@ public class SftpController {
                     }
                 }
             } catch (Exception e) {
-                Log.v(TAG, "sftprunnable exptn " + e.getCause());
+                e.printStackTrace();
                 success = false;
                 return success;
             }

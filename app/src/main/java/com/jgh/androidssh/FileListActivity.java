@@ -2,6 +2,7 @@ package com.jgh.androidssh;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Vector;
 
 import com.jcraft.jsch.ChannelSftp;
@@ -164,14 +165,16 @@ public class FileListActivity extends Activity implements OnItemClickListener, O
     public void onClick(View v) {
         if (v == mUpButton) {
 
-            boolean hasParent = mRootFile.getParentFile() == null ? false : true;
+            boolean hasParent = mRootFile.getParentFile() != null;
             if (hasParent) {
                 mRootFile = mRootFile.getParentFile();
+                File[] mRootFileList = mRootFile.listFiles();
+                if (mRootFileList == null) {
+                    return;
+                }
 
                 mFilenames.clear();
-                for (File f : mRootFile.listFiles()) {
-                    mFilenames.add(f);
-                }
+                mFilenames.addAll(Arrays.asList(mRootFileList));
 
                 setAdapter(mFilenames);
                 mLocalGridView.setAdapter(mFileListAdapter);

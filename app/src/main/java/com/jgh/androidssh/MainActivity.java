@@ -112,7 +112,12 @@ public class MainActivity extends Activity implements OnClickListener {
                                 }
                             };
                             mCommandEdit.AddLastInput(command);
-                            SessionController.getSessionController().executeCommand(mHandler, mCommandEdit, t, command);
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    SessionController.getSessionController().executeCommand(mHandler, mCommandEdit, t, command);
+                                }
+                            }).start();
                             return false;
                         }
                     }
