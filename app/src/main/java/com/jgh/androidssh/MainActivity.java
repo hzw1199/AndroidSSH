@@ -34,6 +34,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
     private static final String TAG = "MainActivity";
     private TextView mConnectStatus;
+    private boolean isConnected = false;
 
     private SshEditText mCommandEdit;
     private Button mButton, mEndSessionBtn, mSftpButton;
@@ -231,7 +232,7 @@ public class MainActivity extends Activity implements OnClickListener {
         newFragment.setListener(new ConnectionStatusListener() {
             @Override
             public void onDisconnected() {
-
+                isConnected = false;
                 mTvHandler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -242,7 +243,16 @@ public class MainActivity extends Activity implements OnClickListener {
 
             @Override
             public void onConnected() {
-
+                if (!isConnected) {
+                    isConnected = true;
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            SessionController.getSessionController().openShell(mHandler, mCommandEdit);
+                        }
+                    }).start();
+                }
+                isConnected = true;
                 mTvHandler.post(new Runnable() {
                     @Override
                     public void run() {

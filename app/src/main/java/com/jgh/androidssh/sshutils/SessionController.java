@@ -249,6 +249,19 @@ public class SessionController {
         mShellController = null;
     }
 
+    public void openShell(Handler handler, EditText editText) {
+        if (mShellController == null) {
+            mShellController = new ShellController();
+
+            try {
+                mShellController.openShell(getSession(), handler, editText);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                //TODO fix general exception catching
+            }
+        }
+    }
 
     /**
      * Execute command on remote server. If SSH is not open, SSH shell will be opened and
@@ -262,17 +275,7 @@ public class SessionController {
             return false;
         } else {
 
-            if (mShellController == null) {
-                mShellController = new ShellController();
-
-                try {
-                    mShellController.openShell(getSession(), handler, editText);
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    //TODO fix general exception catching
-                }
-            }
+            openShell(handler, editText);
 
             synchronized (mShellController) {
                 mShellController.writeToOutput(command);
