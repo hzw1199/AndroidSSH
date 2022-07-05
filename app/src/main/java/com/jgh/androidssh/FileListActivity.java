@@ -156,7 +156,8 @@ public class FileListActivity extends Activity implements OnItemClickListener, O
             progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 
             File[] arr = {mFilenames.get(position)};
-            mSessionController.uploadFiles(arr, progressDialog);
+            String[] des = {mFilenames.get(position).getName()};
+            mSessionController.uploadFiles(arr, des, progressDialog);
         }
 
     }
@@ -245,6 +246,7 @@ public class FileListActivity extends Activity implements OnItemClickListener, O
 
         public SftpProgressDialog(Context context, int theme) {
             super(context, theme);
+            setCancelable(false);
             // TODO Auto-generated constructor stub
         }
 

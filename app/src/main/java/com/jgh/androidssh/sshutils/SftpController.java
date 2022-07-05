@@ -121,14 +121,17 @@ public class SftpController {
          */
         private File[] mLocalFiles;
 
+        private String[] mDestinations;
+
         //
         // Constructor
         //
 
-        public UploadTask(Session session, File[] localFiles, SftpProgressMonitor spd) {
+        public UploadTask(Session session, File[] localFiles, String[] destinations, SftpProgressMonitor spd) {
 
             mProgressDialog = spd;
             mLocalFiles = localFiles;
+            mDestinations = destinations;
             mSession = session;
         }
 
@@ -142,7 +145,7 @@ public class SftpController {
 
             boolean success = true;
             try {
-                uploadFiles(mSession, mLocalFiles, mProgressDialog);
+                uploadFiles(mSession, mLocalFiles, mDestinations, mProgressDialog);
             } catch (JSchException e) {
                 e.printStackTrace();
                 Log.e(TAG, "JSchException " + e.getMessage());
@@ -179,7 +182,7 @@ public class SftpController {
      * @throws java.io.IOException
      * @throws SftpException
      */
-    public void uploadFiles(Session session, File[] localFiles, SftpProgressMonitor spm) throws JSchException, IOException, SftpException {
+    public void uploadFiles(Session session, File[] localFiles, String[] destinations, SftpProgressMonitor spm) throws JSchException, IOException, SftpException {
         if (session == null || !session.isConnected()) {
             session.connect();
         }
@@ -189,8 +192,8 @@ public class SftpController {
         channel.connect();
         ChannelSftp channelSftp = (ChannelSftp) channel;
 
-        for (File file : localFiles) {
-            channelSftp.put(file.getPath(), file.getName(), spm, ChannelSftp.APPEND);
+        for (int i = 0; i<localFiles.length; i++) {
+            channelSftp.put(localFiles[i].getPath(), destinations[i], spm, ChannelSftp.APPEND);
         }
 
         channelSftp.disconnect();
