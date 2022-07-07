@@ -157,7 +157,7 @@ public class SessionController {
      * @param files list of files to upload
      * @param spm   progress monitor, to monitor upload completion percentage
      */
-    public void uploadFiles(File[] files, String[] destinations, SftpProgressMonitor spm) {
+    public void uploadFiles(File[] files, String[] destinations, MySftpProgressMonitor spm) {
         if (mSftpController == null) {
             mSftpController = new SftpController();
 

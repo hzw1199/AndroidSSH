@@ -8,9 +8,9 @@ import java.util.Vector;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
-import com.jcraft.jsch.SftpProgressMonitor;
 import com.jgh.androidssh.adapters.FileListAdapter;
 import com.jgh.androidssh.adapters.RemoteFileListAdapter;
+import com.jgh.androidssh.sshutils.MySftpProgressMonitor;
 import com.jgh.androidssh.sshutils.SessionController;
 import com.jgh.androidssh.sshutils.TaskCallbackHandler;
 
@@ -226,7 +226,7 @@ public class FileListActivity extends Activity implements OnItemClickListener, O
     }
 
 
-    private class SftpProgressDialog extends ProgressDialog implements SftpProgressMonitor {
+    private class SftpProgressDialog extends ProgressDialog implements MySftpProgressMonitor {
 
         /**
          * Size of file to transfer
@@ -281,6 +281,10 @@ public class FileListActivity extends Activity implements OnItemClickListener, O
         }
 
 
+        @Override
+        public void onFail() {
+            dismiss();
+        }
     }
 
 

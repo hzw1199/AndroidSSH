@@ -114,7 +114,7 @@ public class SftpController {
         /**
          * Progress dialog to monitor upload progress.
          */
-        private SftpProgressMonitor mProgressDialog;
+        private MySftpProgressMonitor mProgressDialog;
 
         /**
          * Array of local files to be uploaded
@@ -127,7 +127,7 @@ public class SftpController {
         // Constructor
         //
 
-        public UploadTask(Session session, File[] localFiles, String[] destinations, SftpProgressMonitor spd) {
+        public UploadTask(Session session, File[] localFiles, String[] destinations, MySftpProgressMonitor spd) {
 
             mProgressDialog = spd;
             mLocalFiles = localFiles;
@@ -165,7 +165,11 @@ public class SftpController {
 
         @Override
         protected void onPostExecute(Boolean b) {
-            //TODO
+            if (!b) {
+                if (mProgressDialog != null) {
+                    mProgressDialog.onFail();
+                }
+            }
         }
 
     }
