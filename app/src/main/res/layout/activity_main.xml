@@ -73,7 +73,14 @@
                 style="@style/buttonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/filetransfer" />
+                android:text="@string/filetransfer_sftp" />
+
+            <Button
+                android:id="@+id/scpbutton"
+                style="@style/buttonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/filetransfer_scp" />
 
             <Button
                 android:id="@+id/endsessionbutton"

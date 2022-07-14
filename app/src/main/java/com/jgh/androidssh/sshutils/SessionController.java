@@ -15,7 +15,6 @@ import com.jcraft.jsch.SftpException;
 import com.jcraft.jsch.SftpProgressMonitor;
 
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Controller for Jsch SSH sessions. All SSH
@@ -46,6 +45,11 @@ public class SessionController {
      * Controls Shell interface
      */
     private ShellController mShellController;
+
+    /**
+     * Controls SCP interface
+     */
+    private ScpController mScpController;
 
     /**
      * Listener object for connection status changed.
@@ -155,9 +159,10 @@ public class SessionController {
      * Uploads files to remote server.
      *
      * @param files list of files to upload
+     * @param destinations array of files remote
      * @param spm   progress monitor, to monitor upload completion percentage
      */
-    public void uploadFiles(File[] files, String[] destinations, MySftpProgressMonitor spm) {
+    public void uploadFiles(File[] files, String[] destinations, FileProgressMonitor spm) {
         if (mSftpController == null) {
             mSftpController = new SftpController();
 
@@ -207,6 +212,22 @@ public class SessionController {
         mSftpController.lsRemoteFiles(mSession, taskCallbackHandler, path);
 
 
+    }
+
+
+    /**
+     * Uploads files to remote server.
+     *
+     * @param file file to upload
+     * @param destination file remote
+     * @param spm   progress monitor, to monitor upload completion percentage
+     */
+    public void scpUploadFile(String file, String destination, FileProgressMonitor spm) {
+        if (mScpController == null) {
+            mScpController = new ScpController();
+
+        }
+        mScpController.new UploadTask(mSession, file, destination, spm).execute();
     }
 
 

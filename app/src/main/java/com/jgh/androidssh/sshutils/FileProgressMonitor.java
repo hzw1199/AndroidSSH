@@ -7,6 +7,6 @@ import com.jcraft.jsch.SftpProgressMonitor;
  * @Author: zongheng.wu
  * @Date: 2022/7/7 21:59
  */
-public interface MySftpProgressMonitor extends SftpProgressMonitor {
+public interface FileProgressMonitor extends SftpProgressMonitor {
     void onFail();
 }

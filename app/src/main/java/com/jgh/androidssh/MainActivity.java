@@ -1,14 +1,16 @@
 
 package com.jgh.androidssh;
 
-import java.util.regex.Pattern;
-
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -24,7 +26,14 @@ import android.widget.Toast;
 import com.jgh.androidssh.dialogs.SshConnectFragmentDialog;
 import com.jgh.androidssh.sshutils.ConnectionStatusListener;
 import com.jgh.androidssh.sshutils.ExecTaskCallbackHandler;
+import com.jgh.androidssh.sshutils.FileProgressDialog;
 import com.jgh.androidssh.sshutils.SessionController;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.regex.Pattern;
 
 /**
  * Main activity. Connect to SSH server and launch command shell.
@@ -33,15 +42,18 @@ import com.jgh.androidssh.sshutils.SessionController;
 public class MainActivity extends Activity implements OnClickListener {
 
     private static final String TAG = "MainActivity";
+    private final int REQ_SCP = 1;
     private TextView mConnectStatus;
     private boolean isConnected = false;
 
     private SshEditText mCommandEdit;
-    private Button mButton, mEndSessionBtn, mSftpButton;
+    private Button mButton, mEndSessionBtn, mSftpButton, mScpButton;
 
     private Handler mHandler;
     private Handler mTvHandler;
     private String mLastLine;
+
+    private SessionController mSessionControllerScp;
 
     @Override
     public void onCreate(Bundle bundle) {
@@ -54,12 +66,14 @@ public class MainActivity extends Activity implements OnClickListener {
         mButton = (Button) findViewById(R.id.enterbutton);
         mEndSessionBtn = (Button) findViewById(R.id.endsessionbutton);
         mSftpButton = (Button) findViewById(R.id.sftpbutton);
+        mScpButton = (Button) findViewById(R.id.scpbutton);
         mCommandEdit = (SshEditText) findViewById(R.id.command);
         mConnectStatus = (TextView) findViewById(R.id.connectstatus);
         // set onclicklistener
         mButton.setOnClickListener(this);
         mEndSessionBtn.setOnClickListener(this);
         mSftpButton.setOnClickListener(this);
+        mScpButton.setOnClickListener(this);
 
         mConnectStatus.setText("Connect Status: NOT CONNECTED");
         //handlers
@@ -207,6 +221,10 @@ public class MainActivity extends Activity implements OnClickListener {
                 startSftpActivity();
 
             }
+        } else if (v == mScpButton) {
+            if (SessionController.isConnected()) {
+                getScpFis(REQ_SCP);
+            }
         } else if (v == this.mEndSessionBtn) {
             try {
                 if (SessionController.isConnected()) {
@@ -263,5 +281,95 @@ public class MainActivity extends Activity implements OnClickListener {
         });
 
         newFragment.show(ft, "dialog");
+    }
+
+    private String copyOtaFileToCache(InputStream inputStream) {
+        File file = new File(getExternalCacheDir(), "ScpTmpFile");
+        if (file.exists()) {
+            file.delete();
+        }
+        FileOutputStream fileOutputStream = null;
+        try {
+            fileOutputStream = new FileOutputStream(file);
+            byte[] buf = new byte[1024];
+            int count;
+            while ((count = inputStream.read(buf)) > 0) {
+                fileOutputStream.write(buf, 0, count);
+            }
+            fileOutputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                if (fileOutputStream != null) {
+                    fileOutputStream.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return file.getAbsolutePath();
+    }
+
+    private void getScpFis(int requestCode) {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("application/octet-stream");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent, requestCode);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQ_SCP && resultCode == Activity.RESULT_OK) {
+            Uri uri = data.getData();
+            String fileName = "ScpTmpFile";
+            if (uri.toString().startsWith("file:")) {
+                fileName = uri.getPath();
+            } else { // uri.startsWith("content:")
+                Cursor c = getContentResolver().query(uri, null, null, null, null);
+                if (c != null && c.moveToFirst()) {
+                    int id = c.getColumnIndex(MediaStore.Files.FileColumns.DISPLAY_NAME);
+                    if (id != -1) {
+                        fileName = c.getString(id);
+                    }
+                }
+            }
+            try {
+                InputStream fis = getContentResolver().openInputStream(uri);
+                if (fis != null) {
+                    String finalFileName = fileName;
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            String path = copyOtaFileToCache(fis);
+                            if (SessionController.isConnected()) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        FileProgressDialog progressDialog = new FileProgressDialog(MainActivity.this, 0);
+                                        progressDialog.setIndeterminate(false);
+                                        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                                        progressDialog.show();
+
+                                        mSessionControllerScp = SessionController.getSessionController();
+                                        mSessionControllerScp.scpUploadFile(path, "/tmp/" + finalFileName, progressDialog);
+                                    }
+                                });
+                            }
+                        }
+                    }).start();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

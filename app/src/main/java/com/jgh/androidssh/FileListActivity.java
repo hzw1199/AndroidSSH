@@ -1,28 +1,15 @@
 package com.jgh.androidssh;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Vector;
-
-import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.SftpException;
-import com.jgh.androidssh.adapters.FileListAdapter;
-import com.jgh.androidssh.adapters.RemoteFileListAdapter;
-import com.jgh.androidssh.sshutils.MySftpProgressMonitor;
-import com.jgh.androidssh.sshutils.SessionController;
-import com.jgh.androidssh.sshutils.TaskCallbackHandler;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
+import android.view.DragEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnDragListener;
@@ -30,11 +17,21 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.GridView;
-import android.view.DragEvent;
-
-
-import android.util.Log;
 import android.widget.TextView;
+
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.SftpException;
+import com.jgh.androidssh.adapters.FileListAdapter;
+import com.jgh.androidssh.adapters.RemoteFileListAdapter;
+import com.jgh.androidssh.sshutils.FileProgressDialog;
+import com.jgh.androidssh.sshutils.SessionController;
+import com.jgh.androidssh.sshutils.TaskCallbackHandler;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Vector;
 
 
 /**
@@ -151,9 +148,10 @@ public class FileListActivity extends Activity implements OnItemClickListener, O
 
         } else {
             // sftp the file
-            SftpProgressDialog progressDialog = new SftpProgressDialog(this, 0);
+            FileProgressDialog progressDialog = new FileProgressDialog(this, 0);
             progressDialog.setIndeterminate(false);
             progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            progressDialog.show();
 
             File[] arr = {mFilenames.get(position)};
             String[] des = {mFilenames.get(position).getName()};
@@ -226,68 +224,6 @@ public class FileListActivity extends Activity implements OnItemClickListener, O
     }
 
 
-    private class SftpProgressDialog extends ProgressDialog implements MySftpProgressMonitor {
-
-        /**
-         * Size of file to transfer
-         */
-        private long mSize = 0;
-        /**
-         * Current progress count
-         */
-        private long mCount = 0;
-
-        /**
-         * Constructor
-         *
-         * @param context
-         * @param theme
-         */
-
-        public SftpProgressDialog(Context context, int theme) {
-            super(context, theme);
-            setCancelable(false);
-            // TODO Auto-generated constructor stub
-        }
-
-        //
-        // SftpProgressMonitor methods
-        //
-
-        /**
-         * Gets the data uploaded since the last count.
-         */
-        public boolean count(long arg0) {
-            mCount += arg0;
-            this.setProgress((int) ((float) (mCount) / (float) (mSize) * (float) getMax()));
-            return true;
-        }
-
-        /**
-         * Data upload is ended. Dismiss progress dialog.
-         */
-        public void end() {
-            this.setProgress(this.getMax());
-            this.dismiss();
-
-        }
-
-        /**
-         * Initializes the SftpProgressMonitor
-         */
-        public void init(int arg0, String arg1, String arg2, long arg3) {
-            mSize = arg3;
-
-        }
-
-
-        @Override
-        public void onFail() {
-            dismiss();
-        }
-    }
-
-
     /**
      * Listener class for remote file list click events. Handles file and directory clicks
      * from user.
@@ -349,7 +285,7 @@ public class FileListActivity extends Activity implements OnItemClickListener, O
             } else {
 
                 // sftp the file
-                SftpProgressDialog progressDialog = new SftpProgressDialog(FileListActivity.this, 0);
+                FileProgressDialog progressDialog = new FileProgressDialog(FileListActivity.this, 0);
                 progressDialog.setIndeterminate(false);
                 progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                 progressDialog.show();

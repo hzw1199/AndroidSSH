@@ -114,7 +114,7 @@ public class SftpController {
         /**
          * Progress dialog to monitor upload progress.
          */
-        private MySftpProgressMonitor mProgressDialog;
+        private FileProgressMonitor mProgressDialog;
 
         /**
          * Array of local files to be uploaded
@@ -127,7 +127,7 @@ public class SftpController {
         // Constructor
         //
 
-        public UploadTask(Session session, File[] localFiles, String[] destinations, MySftpProgressMonitor spd) {
+        public UploadTask(Session session, File[] localFiles, String[] destinations, FileProgressMonitor spd) {
 
             mProgressDialog = spd;
             mLocalFiles = localFiles;
@@ -181,6 +181,7 @@ public class SftpController {
      *
      * @param session    the Jsch SSH session instance
      * @param localFiles array of files to be uploaded
+     * @param destinations array of files remote
      * @param spm        progress monitor
      * @throws JSchException
      * @throws java.io.IOException
