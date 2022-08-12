@@ -320,7 +320,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
     private void getScpFis(int requestCode) {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("application/octet-stream");
+        intent.setType("*/*");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         startActivityForResult(intent, requestCode);
     }
@@ -360,6 +360,7 @@ public class MainActivity extends Activity implements OnClickListener {
                                         progressDialog.show();
 
                                         mSessionControllerScp = SessionController.getSessionController();
+                                        // Always upload file to /tmp directory
                                         mSessionControllerScp.scpUploadFile(path, "/tmp/" + finalFileName, progressDialog);
                                     }
                                 });
