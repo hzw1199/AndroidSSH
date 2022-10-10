@@ -177,7 +177,7 @@ public class MainActivity extends Activity implements OnClickListener {
             return mCommandEdit.getText().toString().trim();
         }
         if(mLastLine == null){
-            Toast.makeText(this, "no text to process", Toast.LENGTH_LONG);
+            Toast.makeText(this, "no text to process", Toast.LENGTH_LONG).show();
             return "";
         }
         String[] lines = mLastLine.split(Pattern.quote(mCommandEdit.getPrompt()));

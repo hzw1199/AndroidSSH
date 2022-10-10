@@ -106,8 +106,11 @@ public class SessionController {
     public static boolean isConnected() {
         Log.v(TAG, "session controller exists... " + exists());
         if (exists()) {
+            if (sSessionController.getSession() == null) {
+                return false;
+            }
             Log.v(TAG, "disconnecting");
-            if (getSessionController().getSession().isConnected())
+            if (sSessionController.getSession().isConnected())
                 return true;
         }
         return false;
